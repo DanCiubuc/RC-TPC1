@@ -16,28 +16,33 @@ server_name = sys.argv[2]
 
 UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
 
-args = input()
+while(True):
 
-args = args.split(" ")
+   args = input()
+
+   args = args.split(" ")
           
-command = args[0]
+   command = args[0]
 
-if command == "open":
-    if len(args) != 2:
-        raise Exception("(1) invalid number of arguments;") 
+   if command == "open":
+       if len(args) != 2:
+          raise Exception("(1) invalid number of arguments;")
 
-    bytesToSend = (" ".join(str(element) for element in args)).encode()
-    UDPClientSocket.sendto(bytesToSend, serverAddressPort)
-elif command == "close":
-    print(args)
-elif command == "get":
-    print(args)
-elif command == "put":
-    print(args)
-    
-response = UDPClientSocket.recvfrom(bufferSize)
+       bytesToSend = (" ".join(str(element) for element in args)).encode()
 
-print(response[0].decode())
+   elif command == "close":
+        if len(args) != 1:
+            raise Exception("(1) invalid number of arguments;")
+        bytesToSend = str(args[0]).encode()
+
+   elif command == "get":
+        print(args)
+   elif command == "put":
+        print(args)
+
+   UDPClientSocket.sendto(bytesToSend, serverAddressPort)
+   response = UDPClientSocket.recvfrom(bufferSize)
+   print(response[0].decode())
 
 
 # Send to server using created UDP socket
