@@ -36,6 +36,7 @@ while(True):
             raise Exception("(1) invalid number of arguments;")
         bytesToSend = str(args[0]).encode()
 
+
    elif command == "get":
         print(args)
    elif command == "put":
@@ -65,6 +66,7 @@ while(True):
         # Close the client socket
         TCPClientSocket.close()
 
-
-
+   if(command == "close" and response[0].decode() == "ack"):
+        UDPClientSocket.close()
+        break
 # Send to server using created UDP socket

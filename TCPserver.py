@@ -35,8 +35,7 @@ while(True):
         elif command == "close":
 
             UDPServerSocket.sendto("ack".encode(), clientMsg[1])
-            UDPServerSocket.close()
-            break
+
         elif command == "get":
             print(args)
         elif command == "put":
