@@ -2,32 +2,39 @@ import socket
 import sys
 
 
-
 # TODO:
 # - Fazer vars globais
 # - Deixar os if else mais eficientes e bonitos
 #
 
 msgFromClient = "Hello UDP Server"
-bytesToSend   = str.encode(msgFromClient)
-bufferSize    = 2048
-serverName    = "localhost"
-clientPort    = 12000
-server_name   = sys.argv[1]
+bytesToSend = str.encode(msgFromClient)
+bufferSize = 2048
+serverName = "localhost"
+clientPort = 12000
+server_name = sys.argv[1]
 
-UDP_Sport     = sys.argv[2]
-OPEN          = "open"
-CLOSE         = "close"
-GET           = "get"
-PUT           = "put"
-EXCEPTION_1   = "(1) invalid number of arguments;"
-ACK           = "ack"
+UDP_Sport = sys.argv[2]
+OPEN = "open"
+CLOSE = "close"
+GET = "get"
+PUT = "put"
+EXCEPTION_1 = "(1) invalid number of arguments;"
+ACK = "ack"
 CLIENT_CLOSED = "Client closed"
-TCP_RUNNING   = "TCP Client is running"
-CONNECTED_BY  = "Connected by: "
-READ_BINARY   = "rb"
-WRITE_BINARY  = "wb"
+TCP_RUNNING = "TCP Client is running"
+CONNECTED_BY = "Connected by: "
+READ_BINARY = "rb"
+WRITE_BINARY = "wb"
 FILE_NOT_FOUND = "(2) the indicated file does not exist on the client;"
+FILE_ALREADY_EXISTS = "(2) a file with the indicated name already exists on the client;"
+SERVER_FILE_ALREADY_EXISTS = (
+    "(3) a file with the indicated name already exists on the server;"
+)
+SERVER_FILE_NOT_FOUND = "(3) the indicated file does not exist on the server;"
+
+
+NACK_3 = "nack 3"
 
 serverAddressPort = ("127.0.0.1", int(UDP_Sport))
 
@@ -76,6 +83,9 @@ while True:
 
         response = UDPClientSocket.recvfrom(bufferSize)
 
+        if response[0].decode() == NACK_3:
+            raise Exception(SERVER_FILE_NOT_FOUND)
+
         print(response[0])
 
         if response[0].decode() == ACK:
@@ -91,15 +101,17 @@ while True:
             print(TCP_RUNNING)
 
             print(CONNECTED_BY, str(addr))  # new socket created on return
-
-            with open(fileName, WRITE_BINARY) as file:
-                while True:
-                    bytesReceived = connSocket.recv(
-                        bufferSize
-                    )  # Receives bytes in chunks
-                    if not bytesReceived:
-                        break  # No more bytes to receive
-                    file.write(bytesReceived)
+            try:
+                with open(fileName, WRITE_BINARY) as file:
+                    while True:
+                        bytesReceived = connSocket.recv(
+                            bufferSize
+                        )  # Receives bytes in chunks
+                        if not bytesReceived:
+                            break  # No more bytes to receive
+                        file.write(bytesReceived)
+            except FileExistsError:
+                raise Exception(FILE_ALREADY_EXISTS)
             # Close Sockets
             connSocket.close()
             TCPSocket.close()
@@ -115,6 +127,9 @@ while True:
         response = UDPClientSocket.recvfrom(bufferSize)
 
         print(response[0].decode())
+
+        if response[0].decode() == NACK_3:
+            raise Exception(SERVER_FILE_ALREADY_EXISTS)
 
         if response[0].decode() == ACK:
             # Create TCP Welcoming socket

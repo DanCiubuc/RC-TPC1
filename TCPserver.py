@@ -2,24 +2,24 @@ import socket
 import sys
 import os
 
-localIP    = "127.0.0.1"
+localIP = "127.0.0.1"
 bufferSize = 2048
 clientPort = 12000
 serverName = "localhost"
 
-UDP_Sport    = int(sys.argv[1])
-UDP_RUNNING  = "UDP server up and listening"
-TCP_RUNNING  = "TCP Socket is running"
-OPEN         = "open"
-CLOSE        = "close"
-GET          = "get"
-PUT          = "put"
-SERVER       = "server"
-ACK          = "ack"
-READ_BINARY  = "rb"
+UDP_Sport = int(sys.argv[1])
+UDP_RUNNING = "UDP server up and listening"
+TCP_RUNNING = "TCP Socket is running"
+OPEN = "open"
+CLOSE = "close"
+GET = "get"
+PUT = "put"
+SERVER = "server"
+ACK = "ack"
+READ_BINARY = "rb"
 WRITE_BINARY = "wb"
 CLOSE_SOCKET = "i want to close client socket"
-NACK_3       = "nack 3"
+NACK_3 = "nack 3"
 
 # TODO: reutilizar código para get e put (colocar um if)
 
@@ -50,6 +50,8 @@ while True:
         elif command == GET:
             fileName = args[1]
 
+            fileName = os.path.join(SERVER, fileName)
+
             if not (os.path.exists(fileName)):
                 # File doesn't exist in the server's file system
                 UDPServerSocket.sendto(NACK_3.encode(), clientMsg[1])
@@ -60,7 +62,7 @@ while True:
                 serverSocket.connect((serverName, clientPort))
                 print(TCP_RUNNING)
 
-                with open(os.path.join(SERVER, fileName), READ_BINARY) as file:
+                with open(fileName, READ_BINARY) as file:
                     while True:
                         bytesToSend = file.read(bufferSize)  # Read bytes in chunks
                         if not bytesToSend:
@@ -71,7 +73,9 @@ while True:
         elif command == PUT:
             fileName = args[2]
 
-            if (os.path.exists(fileName)):
+            fileName = os.path.join(SERVER, fileName)
+
+            if os.path.exists(fileName):
                 # File already exists in the server's file system
                 UDPServerSocket.sendto(NACK_3.encode(), clientMsg[1])
             else:
@@ -82,11 +86,12 @@ while True:
                 serverSocket.connect((serverName, clientPort))
 
                 print(TCP_RUNNING)
-                print(fileName)
 
-                with open(os.path.join(SERVER, fileName), WRITE_BINARY) as file:
+                with open(fileName, WRITE_BINARY) as file:
                     while True:
-                        bytesReceived = serverSocket.recv(bufferSize) # Receives bytes in chunks
+                        bytesReceived = serverSocket.recv(
+                            bufferSize
+                        )  # Receives bytes in chunks
                         if not bytesReceived:
                             break  # No more bytes to receive
                         file.write(bytesReceived)
